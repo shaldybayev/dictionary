@@ -1,160 +1,209 @@
+# dictionary.py
+
 import json
-import os
 import random
+import os
 
-# Интерфейсные переводы
-interface_translations = {
-    "en": {
-        "choose_language": "Choose your interface language:",
-        "welcome": "Welcome to the Dictionary Trainer!",
-        "choose_pair": "Choose a language pair for translation (e.g., en-ru):",
-        "menu": "\nMenu:\n1. Add word\n2. Edit word\n3. Delete word\n4. Show words\n5. Start quiz\n6. Exit",
-        "prompt": "> ",
-        "enter_english": "Enter English word:",
-        "enter_translation": "Enter translation(s), comma-separated:",
-        "word_added": "Word added!",
-        "word_exists": "Word already exists. Do you want to edit it? (y/n): ",
-        "word_not_found": "Word not found.",
-        "word_updated": "Word updated!",
-        "word_deleted": "Word deleted!",
-        "quiz_intro": "Starting quiz. Type 'q' or 'e' to exit.",
-        "correct": "Correct!",
-        "incorrect": "Incorrect! Correct answers: ",
-        "final_score": "Final score:",
-        "no_words": "No words available yet.",
-        "choose_action": "Choose an action:",
-        "goodbye": "Goodbye!"
-    },
-    "ru": {
-        "choose_language": "Выберите язык интерфейса:",
-        "welcome": "Добро пожаловать в Тренажёр словаря!",
-        "choose_pair": "Выберите языковую пару (например, en-ru):",
-        "menu": "\nМеню:\n1. Добавить слово\n2. Изменить слово\n3. Удалить слово\n4. Показать слова\n5. Начать викторину\n6. Выход",
-        "prompt": "> ",
-        "enter_english": "Введите английское слово:",
-        "enter_translation": "Введите перевод(ы) через запятую:",
-        "word_added": "Слово добавлено!",
-        "word_exists": "Слово уже существует. Хотите изменить? (y/n): ",
-        "word_not_found": "Слово не найдено.",
-        "word_updated": "Слово обновлено!",
-        "word_deleted": "Слово удалено!",
-        "quiz_intro": "Начинаем викторину. Введите 'q' или 'e' для выхода.",
-        "correct": "Правильно!",
-        "incorrect": "Неправильно! Правильные ответы: ",
-        "final_score": "Финальный счёт:",
-        "no_words": "Пока нет добавленных слов.",
-        "choose_action": "Выберите действие:",
-        "goodbye": "До свидания!"
-    }
-    # Можно добавить другие языки здесь
+SUPPORTED_LANGUAGES = {
+    "en": "English",
+    "ru": "Русский",
+    "fr": "Français",
+    "es": "Español",
+    "kk": "Қазақша",
+    "zh": "中文",
+    "ko": "한국어",
+    "ja": "日本語"
 }
 
-language_choices = {
-    "1": "en",
-    "2": "ru",
-    "3": "fr",
-    "4": "es",
-    "5": "kk",
-    "6": "zh",
-    "7": "ko",
-    "8": "ja"
-}
+def clear():
+    os.system('cls' if os.name == 'nt' else 'clear')
 
-def t(key, lang):
-    return interface_translations.get(lang, interface_translations["en"]).get(key, key)
+def get_interface_language():
+    print("Select your interface language / Выберите язык интерфейса:")
+    for code, name in SUPPORTED_LANGUAGES.items():
+        print(f"{code}: {name}")
+    while True:
+        lang = input("Language code: ").strip().lower()
+        if lang in SUPPORTED_LANGUAGES:
+            return lang
+        else:
+            print("Unsupported language code. Try again.")
 
 def load_words(filename):
-    if os.path.exists(filename):
+    try:
         with open(filename, 'r', encoding='utf-8') as f:
             return json.load(f)
-    return {}
+    except FileNotFoundError:
+        return {}
 
-def save_words(filename, data):
+def save_words(words, filename):
     with open(filename, 'w', encoding='utf-8') as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
+        json.dump(words, f, ensure_ascii=False, indent=4)
+
+def normalize(text):
+    return text.lower().strip()
+
+def quiz(words, lang):
+    correct = 0
+    total = 0
+    mistakes = {}
+    unused_words = list(words.items())
+    random.shuffle(unused_words)
+
+    interface = translations[lang]
+
+    while unused_words:
+        eng, translations_list = unused_words.pop()
+        total += 1
+        print(f"{interface['translate']}: {eng}")
+        answer = input("-> ").strip()
+
+        if answer.lower() in ('q', 'quit', 'e', 'exit'):
+            break
+
+        answer_normalized = normalize(answer)
+        valid_answers = [normalize(t) for t in translations_list]
+
+        if answer_normalized in valid_answers:
+            print(interface['correct'])
+            correct += 1
+        else:
+            print(interface['wrong'])
+            print(f"{interface['correct_answers']}: {', '.join(translations_list)}")
+            mistakes[eng] = translations_list
+        print()
+
+    print(interface['results'])
+    print(f"{interface['score']}: {correct}/{total}")
+    if mistakes:
+        print(interface['mistakes'] + ":")
+        for word, correct_list in mistakes.items():
+            print(f"{word}: {', '.join(correct_list)}")
+
+    input(interface['press_enter'])
+
+def add_word(words, lang):
+    interface = translations[lang]
+    eng = input(interface['enter_english']).strip()
+    translation = input(interface['enter_translation']).strip()
+    if eng in words:
+        words[eng].extend([t.strip() for t in translation.split(',') if t.strip() not in words[eng]])
+    else:
+        words[eng] = [t.strip() for t in translation.split(',') if t.strip()]
+    print(interface['word_added'])
+
+def edit_word(words, lang):
+    interface = translations[lang]
+    eng = input(interface['edit_prompt']).strip()
+    if eng in words:
+        print(f"{interface['current_translations']}: {', '.join(words[eng])}")
+        new_translations = input(interface['new_translations']).strip()
+        words[eng] = [t.strip() for t in new_translations.split(',') if t.strip()]
+        print(interface['word_updated'])
+    else:
+        print(interface['word_not_found'])
 
 def main():
-    print("1. English\n2. Русский\n3. Français\n4. Español\n5. Қазақша\n6. 中文\n7. 한국어\n8. 日本語")
-    lang_choice = input("Choose your interface language (1-8): ")
-    lang = language_choices.get(lang_choice, "en")
-    print(f"\n{t('welcome', lang)}")
-
-    pair = input(f"{t('choose_pair', lang)} ").strip()
-    filename = f"words_{pair}.json"
+    lang = get_interface_language()
+    interface = translations[lang]
+    filename = 'words.json'
     words = load_words(filename)
 
     while True:
-        print(t("menu", lang))
-        choice = input(t("prompt", lang))
+        clear()
+        print("=== Dictionary Trainer ===")
+        print("1.", interface['start_quiz'])
+        print("2.", interface['add_word'])
+        print("3.", interface['edit_word'])
+        print("4.", interface['exit'])
+        choice = input("-> ").strip()
 
-        if choice == "1":
-            word = input(t("enter_english", lang)).strip().lower()
-            if word in words:
-                overwrite = input(t("word_exists", lang)).strip().lower()
-                if overwrite != 'y':
-                    continue
-            translation = input(t("enter_translation", lang)).strip().lower()
-            words[word] = translation
-            save_words(filename, words)
-            print(t("word_added", lang))
-
-        elif choice == "2":
-            word = input(t("enter_english", lang)).strip().lower()
-            if word in words:
-                translation = input(t("enter_translation", lang)).strip().lower()
-                words[word] = translation
-                save_words(filename, words)
-                print(t("word_updated", lang))
-            else:
-                print(t("word_not_found", lang))
-
-        elif choice == "3":
-            word = input(t("enter_english", lang)).strip().lower()
-            if word in words:
-                del words[word]
-                save_words(filename, words)
-                print(t("word_deleted", lang))
-            else:
-                print(t("word_not_found", lang))
-
-        elif choice == "4":
-            if not words:
-                print(t("no_words", lang))
-            else:
-                for word, translation in words.items():
-                    print(f"{word} → {translation}")
-
-        elif choice == "5":
-            if not words:
-                print(t("no_words", lang))
-                continue
-
-            print(t("quiz_intro", lang))
-            score = 0
-            total = 0
-            quiz_words = list(words.items())
-            random.shuffle(quiz_words)
-
-            for word, translations in quiz_words:
-                answer = input(f"{word} → ").strip().lower()
-                if answer in ['q', 'e']:
-                    break
-                correct_answers = [x.strip().lower() for x in translations.split(',')]
-                total += 1
-                if answer in correct_answers:
-                    print(t("correct", lang))
-                    score += 1
-                else:
-                    print(f"{t('incorrect', lang)} {', '.join(correct_answers)}")
-
-            print(f"{t('final_score', lang)} {score}/{total}")
-
-        elif choice == "6":
-            print(t("goodbye", lang))
+        if choice == '1':
+            quiz(words, lang)
+        elif choice == '2':
+            add_word(words, lang)
+            save_words(words, filename)
+        elif choice == '3':
+            edit_word(words, lang)
+            save_words(words, filename)
+        elif choice == '4':
             break
-
         else:
-            print(t("choose_action", lang))
+            print(interface['invalid_option'])
+            input("Press Enter...")
+
+translations = {
+    "en": {
+        "translate": "Translate the word",
+        "correct": "✅ Correct!",
+        "wrong": "❌ Incorrect.",
+        "correct_answers": "Correct answers",
+        "results": "Quiz Results",
+        "score": "Score",
+        "mistakes": "Your mistakes",
+        "press_enter": "Press Enter to continue...",
+        "enter_english": "Enter the English word:",
+        "enter_translation": "Enter translations (comma-separated):",
+        "word_added": "Word added!",
+        "edit_prompt": "Enter the English word you want to edit:",
+        "current_translations": "Current translations",
+        "new_translations": "Enter new translations (comma-separated):",
+        "word_updated": "Word updated!",
+        "word_not_found": "Word not found.",
+        "start_quiz": "Start Quiz",
+        "add_word": "Add a New Word",
+        "edit_word": "Edit an Existing Word",
+        "exit": "Exit",
+        "invalid_option": "Invalid option. Try again."
+    },
+    "ru": {
+        "translate": "Переведите слово",
+        "correct": "✅ Верно!",
+        "wrong": "❌ Неверно.",
+        "correct_answers": "Правильные ответы",
+        "results": "Результаты викторины",
+        "score": "Счет",
+        "mistakes": "Ваши ошибки",
+        "press_enter": "Нажмите Enter, чтобы продолжить...",
+        "enter_english": "Введите слово на английском:",
+        "enter_translation": "Введите переводы (через запятую):",
+        "word_added": "Слово добавлено!",
+        "edit_prompt": "Введите слово на английском для редактирования:",
+        "current_translations": "Текущие переводы",
+        "new_translations": "Введите новые переводы (через запятую):",
+        "word_updated": "Слово обновлено!",
+        "word_not_found": "Слово не найдено.",
+        "start_quiz": "Начать викторину",
+        "add_word": "Добавить новое слово",
+        "edit_word": "Редактировать слово",
+        "exit": "Выход",
+        "invalid_option": "Неверный вариант. Попробуйте снова."
+    },
+    "fr": {
+        "translate": "Traduisez le mot",
+        "correct": "✅ Correct !",
+        "wrong": "❌ Incorrect.",
+        "correct_answers": "Réponses correctes",
+        "results": "Résultats du quiz",
+        "score": "Score",
+        "mistakes": "Vos erreurs",
+        "press_enter": "Appuyez sur Entrée pour continuer...",
+        "enter_english": "Entrez le mot anglais:",
+        "enter_translation": "Entrez les traductions (séparées par des virgules):",
+        "word_added": "Mot ajouté !",
+        "edit_prompt": "Entrez le mot anglais à modifier:",
+        "current_translations": "Traductions actuelles",
+        "new_translations": "Entrez les nouvelles traductions (séparées par des virgules):",
+        "word_updated": "Mot mis à jour !",
+        "word_not_found": "Mot non trouvé.",
+        "start_quiz": "Commencer le quiz",
+        "add_word": "Ajouter un nouveau mot",
+        "edit_word": "Modifier un mot existant",
+        "exit": "Quitter",
+        "invalid_option": "Option invalide. Réessayez."
+    }
+    # Можно добавить и другие языки по аналогии
+}
 
 if __name__ == "__main__":
     main()
