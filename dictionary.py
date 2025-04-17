@@ -25,12 +25,20 @@ def save_words(words):
         json.dump(words, f, indent=4, ensure_ascii=False)
 
 def add_word(words):
-    en = input("English word: ").strip()
-    ru_input = input("Translation(s) (comma-separated): ").strip().lower()
-    ru_list = [t.strip() for t in ru_input.split(',')]
-    words[en] = ru_list
-    save_words(words)
-    print("✓ Word added!")
+    print("➕ Adding new words. Type 'q' to quit.\n")
+    while True:
+        en = input("English word: ").strip()
+        if en.lower() in ["q", "quit"]:
+            print("👋 Exiting word addition mode.")
+            break
+        ru_input = input("Translation(s) (comma-separated): ").strip().lower()
+        if ru_input.lower() in ["q", "quit"]:
+            print("👋 Exiting word addition mode.")
+            break
+        ru_list = [t.strip() for t in ru_input.split(',')]
+        words[en] = ru_list
+        save_words(words)
+        print("✓ Word added!\n")
 
 def quiz(words):
     if not words:
@@ -39,21 +47,29 @@ def quiz(words):
     items = list(words.items())
     random.shuffle(items)
     score = 0
+    total = 0
     for en, ru_list in items:
         ans = input(f"Translate '{en}': ").strip().lower()
-        if ans in [t.lower() for t in ru_list]:
-            print("✓ Correct!")
+        if ans in ['q', 'quit', 'e', 'exit']:
+            print("\nQuiz interrupted.")
+            break
+        user_translations = [t.strip() for t in ans.split(',')]
+        correct = any(ut in [r.lower() for r in ru_list] for ut in user_translations)
+        if correct:
+            print("✓ Correct!\n")
             score += 1
         else:
-            print(f"✗ Incorrect. Possible answers: {', '.join(ru_list)}")
-    print(f"\nYour score: {score}/{len(words)}")
+            print(f"✗ Incorrect. Possible answers: {', '.join(ru_list)}\n")
+        total += 1
+    if total > 0:
+        print(f"Your score: {score}/{total}")
 
 def view_edit(words):
     if not words:
         print("No words added yet.")
         return
     
-    print("\nYour word list:\n")
+    print("\n📚 Your word list:\n")
     for i, (en, ru_list) in enumerate(words.items(), 1):
         print(f"{i}. {en} → {', '.join(ru_list)}")
 
@@ -78,7 +94,11 @@ def view_edit(words):
 def main():
     words = load_words()
     while True:
-        print("\n1. Add word\n2. Quiz\n3. View/edit words\n4. Exit")
+        print("\n🧠 Language Trainer")
+        print("1. Add word(s)")
+        print("2. Quiz")
+        print("3. View/edit words")
+        print("4. Exit")
         choice = input("Choice: ").strip()
         if choice == "1":
             add_word(words)
