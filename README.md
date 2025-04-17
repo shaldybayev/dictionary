@@ -1,90 +1,79 @@
+# 🧠 dictionary
 
-# 🧠 Dictionary App / Языковой Тренажёр
+Простое приложение для изучения английских слов. Работает в терминале. Позволяет добавлять слова, проходить викторину, просматривать и редактировать словарь.
 
-Multilingual terminal app for memorizing vocabulary, self-testing, and tracking your learning progress.  
-Многоязычное консольное приложение для запоминания слов, самопроверки и отслеживания прогресса.
-
----
-
-## 🌍 Features / Возможности
-
-- Interface in multiple languages (English, Русский, Français, Español)
-- Language pair selection (English → Russian, French, etc.)
-- Add new vocabulary manually
-- Case-insensitive and multi-answer checking
-- Exit quiz anytime with `q`, `Q`, `e`, or `E`
-- Tracks frequent mistakes
-- Saves data in JSON format
+A simple terminal-based vocabulary trainer for learning English. Allows adding words, taking quizzes, and editing your word list.
 
 ---
 
-## 🚀 Getting Started / Установка
+## 🚀 Возможности / Features
 
-### English
+- Добавление слов и переводов (возможно несколько переводов через запятую).
+- Прохождение викторины на основе сохранённых слов.
+- Подсчёт результатов теста.
+- Просмотр и удаление слов.
+- Сохраняет данные в `words.json`.
 
-```bash
-git clone https://github.com/shaldybayev/dictionary.git
-cd dictionary
-python3 dictionary.py
-```
-
-### Русский
-
-```bash
-git clone https://github.com/shaldybayev/dictionary.git
-cd dictionary
-python3 dictionary.py
-```
+Add words and multiple translations.  
+Take a quiz to test your memory.  
+View your word list and delete entries.  
+All data saved in `words.json`.
 
 ---
 
-## 🧪 Usage / Как использовать
+## 📦 Установка / Installation
 
-1. Choose interface language / Выберите язык интерфейса.
-2. Choose language pair / Выберите языковую пару.
-3. Main menu / Главное меню:
-   - `1` — Add new word / Добавить слово
-   - `2` — Start quiz / Начать тест
-   - `3` — Show all words / Показать все слова
-   - `4` — Show mistakes / Показать ошибки
-   - `5` — Exit / Выход
+1. Склонируйте репозиторий:
+   ```bash
+   git clone https://github.com/shaldybayev/dictionary.git
+   cd dictionary
+   ```
 
-During the quiz, type `q`, `Q`, `e`, or `E` to exit.  
-Во время теста введите `q`, `Q`, `e` или `E`, чтобы выйти.
-
----
-
-## 🗂 File Structure / Структура файлов
-
-- `dictionary.py` — Main app / Главная программа
-- `words_*.json` — Vocabulary for each language pair / Словари
-- `mistakes.json` — Mistakes tracker / Отслеживание ошибок
+2. Запустите:
+   ```bash
+   python dictionary.py
+   ```
 
 ---
 
-## 💡 Example / Пример
+## 🧪 Пример использования / Example usage
 
 ```
-Word: send
-Your answer: отправить
-✅ Correct!
+1. Add word
+2. Quiz
+3. View/edit words
+4. Exit
+Choice: 1
+English word: send
+Translation(s) (comma-separated): отправлять, посылать
+✓ Word added!
 ```
 
 ---
 
-## 🛠 Planned Features / В планах
+## 🗂 Структура / Structure
 
-- [ ] Audio for words / Озвучка слов
-- [ ] Flashcards with pictures / Карточки с изображениями
-- [ ] Web version (Flask or React) / Веб-версия
-- [ ] GUI (Tkinter) / Графический интерфейс
+- `dictionary.py` — основной код.
+- `words.json` — словарь, автоматически создаётся и обновляется.
 
 ---
 
-## 👤 Author / Автор
+## 🛠 Требования / Requirements
 
-Created with ❤️ for language learners.  
-Создано с любовью к изучению языков.
+- Python 3.6+
 
-GitHub: [https://github.com/shaldybayev](https://github.com/shaldybayev)  
+---
+
+## 🌍 Планы / Plans
+
+- Интерфейс на разных языках (English, Русский, Français, Español и др.)
+- Анализ ошибок и сложных слов
+- Поддержка обратного режима (перевод → слово)
+- Возможность импорта/экспорта
+
+---
+
+## 📄 Лицензия / License
+
+MIT
 
